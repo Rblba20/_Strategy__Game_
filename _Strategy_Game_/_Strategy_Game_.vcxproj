@@ -146,6 +146,7 @@
     <ClCompile Include="unit.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="config.hpp" />
     <ClInclude Include="map.hpp" />
     <ClInclude Include="resources.hpp" />
     <ClInclude Include="tile.hpp" />

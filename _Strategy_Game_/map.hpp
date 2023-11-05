@@ -33,9 +33,17 @@ namespace ld {
 
         void render(sf::RenderWindow &window) const;
 
+        void handle_left_mouse_click(const sf::Vector2i &pos);
+
+
     private:
         std::vector<ld::Tile> tiles;
-      std::vector<std::shared_ptr<ld::Unit>> units;
+        std::vector<std::shared_ptr<ld::Unit>> units;
+
+        
+    // MOVE OUT OF MAP
+        sf::Sprite crosshair;
+
     };
 } // namespace ld
 
