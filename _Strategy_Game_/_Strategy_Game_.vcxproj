@@ -143,12 +143,14 @@
     <ClCompile Include="resources.cpp" />
     <ClCompile Include="tile.cpp" />
     <ClCompile Include="tile_config.cpp" />
+    <ClCompile Include="unit.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="map.hpp" />
     <ClInclude Include="resources.hpp" />
     <ClInclude Include="tile.hpp" />
     <ClInclude Include="tile_config.hpp" />
+    <ClInclude Include="unit.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
