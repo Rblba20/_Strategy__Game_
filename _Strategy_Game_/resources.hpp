@@ -28,13 +28,17 @@ const std::vector<ld::TileConfig> TILES = {
     //TileConfig("purple_1.png"),      TileConfig("purple_2.png"),
 };
 
-const std::vector<std::string> files = {"skeleton_armored_right.png","crosshair.png",};
+const std::vector<std::string> files = {
+    "skeleton_armored_right.png", "knight_armored_right.png", "crosshair.png",
+    "button_brown.png", "button_brown_pressed.png"};
 
 class Resources {
 
 public:
   void load();
   const sf::Texture &get_texture(const std::string &filename) const;
+
+  sf::Font basic_font_;
 
 private:
   std::unordered_map<std::string, std::unique_ptr<sf::Texture>> textures;

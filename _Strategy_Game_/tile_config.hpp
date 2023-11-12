@@ -12,10 +12,11 @@ public:
 
   const std::string &get_filename() const;
 
-  const ld::TileType type_;
+  const ld::TileType get_type() const;
 
 private:
   const std::string filename_;
+  const ld::TileType type_;
 };
 } // namespace ld
 

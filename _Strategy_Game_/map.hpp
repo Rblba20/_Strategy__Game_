@@ -5,6 +5,7 @@
 #include <vector>
 #include <cassert>
 
+#include "gui.hpp"
 #include "resources.hpp"
 #include "tile.hpp"
 #include "tile_config.hpp"
@@ -15,18 +16,21 @@ using namespace std;
 
 namespace ld {
    // using MapDefinition = array<array<unsigned, 13>, 10>;
-    using MapDefinition = vector<vector<int>>;
+   //   using MapDefinition = std::array<std::array<unsigned, ld::config::COLS>, ld::config::ROWS>;
+  //  using MapDefinition = vector<vector<int>>;
+    using MapDefinition = std::vector<std::vector<unsigned>>;
+    //MapDefinition map(ld::config::ROWS, std::vector<unsigned>(ld::config::COLS));
     const MapDefinition map_1 = {{
-        {4, 4, 4, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4},
-        {0, 4, 4, 0, 0, 0, 4, 4, 4, 3, 4, 4, 4},
-        {0, 1, 0, 0, 0, 1, 0, 3, 2, 2, 2, 3, 4},
-        {0, 1, 1, 1, 0, 1, 0, 2, 3, 3, 2, 2, 4},
-        {0, 1, 1, 1, 1, 1, 3, 3, 2, 3, 2, 2, 2},
-        {0, 1, 1, 0, 0, 0, 3, 2, 2, 2, 3, 3, 3},
-        {0, 0, 0, 0, 1, 0, 2, 3, 2, 2, 2, 3, 4},
-        {0, 0, 1, 0, 1, 1, 2, 3, 2, 3, 2, 3, 4},
-        {5, 0, 1, 0, 0, 0, 4, 4, 3, 3, 2, 3, 4},
-        {4, 4, 0, 1, 0, 4, 4, 4, 3, 2, 2, 4, 4},
+          {4, 4, 4, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4},
+          {0, 4, 4, 0, 0, 0, 4, 4, 4, 3, 4, 4, 4, 4, 4, 4},
+          {0, 1, 0, 0, 0, 1, 0, 3, 2, 2, 2, 3, 4, 4, 4, 4},
+          {0, 1, 1, 1, 0, 1, 0, 2, 3, 3, 2, 2, 4, 4, 4, 4},
+          {0, 1, 1, 1, 1, 1, 3, 3, 2, 3, 2, 2, 2, 4, 4, 4},
+          {0, 1, 1, 0, 0, 0, 3, 2, 2, 2, 3, 3, 3, 4, 4, 4},
+          {0, 0, 0, 0, 1, 0, 2, 3, 2, 2, 2, 3, 4, 4, 4, 4},
+          {0, 0, 1, 0, 1, 1, 2, 3, 2, 3, 2, 3, 4, 4, 4, 4},
+          {5, 0, 1, 0, 0, 0, 4, 4, 3, 3, 2, 3, 4, 4, 4, 4},
+          {4, 4, 0, 1, 0, 4, 4, 4, 3, 2, 2, 4, 4, 4, 4, 4},
     }};
 
         namespace map_coords {
@@ -46,13 +50,17 @@ namespace ld {
 
 inline bool neighbor_tiles(const ld::Tile &selected_tile,
                                const ld::Tile *unit_tile) {
+        if (!unit_tile) {
+            return false;
+        }
+
         const int row_diff = std::abs(selected_tile.row_ - unit_tile->row_);
         const int col_diff = std::abs(selected_tile.col_ - unit_tile->col_);
 
         return ((row_diff == 1 and col_diff == 0) or
                 (row_diff == 0 and col_diff == 1));
     }
-    };
+}
 
     class Map {
     public:
@@ -61,43 +69,27 @@ inline bool neighbor_tiles(const ld::Tile &selected_tile,
 
         void render(sf::RenderWindow &window) const;
 
-            void add_new_unit(std::shared_ptr<ld::Player> &player,
-                          ld::UnitType unit_type) {
-            // Check there's free space to add a unit
-            bool no_space = true;
+        bool is_valid_move(const ld::Tile &selected_tile,
+                           const ld::Tile *unit_tile) const;
 
-            for (const auto &tile : tiles) {
-                if (tile.unit_ == nullptr) {
-                    no_space = false;
-                }
-            }
+        
+       ld::Tile *find_unit_tile(const std::shared_ptr<ld::Unit> &unit);
 
-            // Select a random tile
-            while (true) {
-                assert(tiles.size() > 0);
 
-                const int id = ld::randint(tiles.size() - 1);
+       void add_new_unit(std::shared_ptr<ld::Player> &player,
+                          ld::UnitType unit_type);
 
-                auto &tile = tiles[id];
+       void handle_left_mouse_click(const sf::Vector2i &pos);
 
-                // Add a unit on the random tile
-                if (tile.type_ == player->tile_type_ and
-                    tile.unit_ == nullptr) {
-                    auto unit = ld::Unit::build_unit(
-                        *resources, player->faction_, unit_type);
-                    units.push_back(unit);
-                    tile.unit_ = unit;
-                    unit->sprite.setPosition(tile.sprite.getPosition());
-
-                    break;
-                }
-            }
-        }
-
-        void handle_left_mouse_click(const sf::Vector2i &pos);
-
+       void update(const sf::Time &delta);
 
     private:
+        void clean_up_units();
+        void switch_players();
+        bool is_human_active() const;
+
+        ld::Gui gui_;
+
         std::vector<ld::Tile> tiles;
         std::vector<std::shared_ptr<ld::Unit>> units;
 
@@ -105,7 +97,12 @@ inline bool neighbor_tiles(const ld::Tile &selected_tile,
     // MOVE OUT OF MAP
         sf::Sprite crosshair;
 
+            // Human player
         std::shared_ptr<ld::Player> player_1_;
+        // AI player
+        std::shared_ptr<ld::Player> player_2_;
+
+        std::shared_ptr<ld::Player> active_player_;
 
         std::shared_ptr<ld::Resources> resources;
 

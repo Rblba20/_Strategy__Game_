@@ -26,7 +26,15 @@ class Unit {
     void render(sf::RenderWindow &window) const;
 
     void set_strength(int strength);
-    int get_strength(int strength) const;
+    void update_strength(int strength_diff);
+    int get_strength() const;
+
+    ld::UnitType get_type() const;
+    ld::Faction get_faction() const;
+
+    bool can_fight(const std::shared_ptr<ld::Unit> &other_unit) const;
+
+    void fight(std::shared_ptr<ld::Unit> &unit);
 
     sf::Sprite sprite;
     bool selected_;
@@ -36,8 +44,8 @@ class Unit {
                                                 ld::UnitType unit_type);
 
   private:
-    const ld::Faction unit_faction_;
     const ld::UnitType unit_type_;
+    const ld::Faction unit_faction_;
 
     int strength_;
 

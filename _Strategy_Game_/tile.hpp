@@ -11,15 +11,17 @@ class Tile {
     Tile(const sf::Texture &texture, const unsigned row, const unsigned col);
     Tile(const sf::Texture &texture, ld::TileType type, int, int);
 
+    ld::TileType get_type() const;
+    void set_type(ld::TileType type);
+
     sf::Sprite sprite;
 
     std::shared_ptr<ld::Unit> unit_;
 
     int row_, col_;
     
-    const ld::TileType type_;
-
   private:
+    ld::TileType type_;
 };
 } // namespace ld
 #endif /* TILE_H */
