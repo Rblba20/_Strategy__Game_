@@ -140,6 +140,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="map.cpp" />
+    <ClCompile Include="player.cpp" />
     <ClCompile Include="resources.cpp" />
     <ClCompile Include="tile.cpp" />
     <ClCompile Include="tile_config.cpp" />
@@ -148,6 +149,7 @@
   <ItemGroup>
     <ClInclude Include="config.hpp" />
     <ClInclude Include="map.hpp" />
+    <ClInclude Include="player.hpp" />
     <ClInclude Include="resources.hpp" />
     <ClInclude Include="tile.hpp" />
     <ClInclude Include="tile_config.hpp" />

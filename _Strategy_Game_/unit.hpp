@@ -5,7 +5,8 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "resources.hpp"
+#include "resources.hpp"6
+#include "config.hpp"
 
 namespace ld {
 
@@ -13,13 +14,13 @@ enum class UnitType {
     Armored,
 };
 
-enum class UnitFaction {
-    Skeleton,
-};
+//enum class UnitFaction {
+//    Skeleton,
+//};
 
 class Unit {
   public:
-    Unit(const sf::Texture &texture, ld::UnitFaction unit_faction,
+    Unit(const sf::Texture &texture, ld::Faction unit_faction,
          ld::UnitType unit_type);
 
     void render(sf::RenderWindow &window) const;
@@ -30,11 +31,12 @@ class Unit {
     sf::Sprite sprite;
     bool selected_;
 
-    static std::shared_ptr<ld::Unit>
-    build_armored_skeleton(const ld::Resources &resources);
+        static std::shared_ptr<ld::Unit> build_unit(const ld::Resources &resources,
+                                                ld::Faction faction,
+                                                ld::UnitType unit_type);
 
   private:
-    const ld::UnitFaction unit_faction_;
+    const ld::Faction unit_faction_;
     const ld::UnitType unit_type_;
 
     int strength_;

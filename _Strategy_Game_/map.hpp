@@ -3,11 +3,14 @@
 
 #include <iostream>
 #include <vector>
+#include <cassert>
 
 #include "resources.hpp"
 #include "tile.hpp"
 #include "tile_config.hpp"
 #include "unit.hpp"
+#include "player.hpp"
+
 using namespace std;
 
 namespace ld {
@@ -26,12 +29,70 @@ namespace ld {
         {4, 4, 0, 1, 0, 4, 4, 4, 3, 2, 2, 4, 4},
     }};
 
+        namespace map_coords {
+    inline int px2tile_col(int x) {
+        return static_cast<double>(x) / ld::config::get_screen_width() *
+               ld::config::COLS;
+    }
+
+    inline int px2tile_row(int y) {
+        return static_cast<double>(y) / ld::config::get_screen_height() *
+               ld::config::ROWS;
+    }
+
+    inline int coords_to_tile_id(int tile_row, int tile_col) {
+        return tile_row * ld::config::COLS + tile_col;
+    }
+
+inline bool neighbor_tiles(const ld::Tile &selected_tile,
+                               const ld::Tile *unit_tile) {
+        const int row_diff = std::abs(selected_tile.row_ - unit_tile->row_);
+        const int col_diff = std::abs(selected_tile.col_ - unit_tile->col_);
+
+        return ((row_diff == 1 and col_diff == 0) or
+                (row_diff == 0 and col_diff == 1));
+    }
+    };
+
     class Map {
     public:
         Map(const ld::MapDefinition &map_definition,
-            const ld::Resources &resources);
+          const std::shared_ptr<ld::Resources> &resources);
 
         void render(sf::RenderWindow &window) const;
+
+            void add_new_unit(std::shared_ptr<ld::Player> &player,
+                          ld::UnitType unit_type) {
+            // Check there's free space to add a unit
+            bool no_space = true;
+
+            for (const auto &tile : tiles) {
+                if (tile.unit_ == nullptr) {
+                    no_space = false;
+                }
+            }
+
+            // Select a random tile
+            while (true) {
+                assert(tiles.size() > 0);
+
+                const int id = ld::randint(tiles.size() - 1);
+
+                auto &tile = tiles[id];
+
+                // Add a unit on the random tile
+                if (tile.type_ == player->tile_type_ and
+                    tile.unit_ == nullptr) {
+                    auto unit = ld::Unit::build_unit(
+                        *resources, player->faction_, unit_type);
+                    units.push_back(unit);
+                    tile.unit_ = unit;
+                    unit->sprite.setPosition(tile.sprite.getPosition());
+
+                    break;
+                }
+            }
+        }
 
         void handle_left_mouse_click(const sf::Vector2i &pos);
 
@@ -43,6 +104,10 @@ namespace ld {
         
     // MOVE OUT OF MAP
         sf::Sprite crosshair;
+
+        std::shared_ptr<ld::Player> player_1_;
+
+        std::shared_ptr<ld::Resources> resources;
 
     };
 } // namespace ld

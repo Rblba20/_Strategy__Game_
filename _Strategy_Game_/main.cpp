@@ -5,14 +5,15 @@
 
 #include <SFML/Graphics.hpp>
 
+
+#include "config.hpp"
 #include "map.hpp"
 #include "resources.hpp"
 #include "tile.hpp"
-#include "config.hpp"
 
 void update(const sf::Time &delta) {}
 
-void render(sf::RenderWindow &window, const ld::Map& map) {
+void render(sf::RenderWindow &window, const ld::Map &map) {
   window.clear();
   map.render(window);
   window.display();
@@ -36,14 +37,16 @@ void handle_events(sf::RenderWindow &window, ld::Map &map) {
 }
 
 int main() {
-  sf::RenderWindow window(sf::VideoMode(ld::config::get_screen_width(),ld::config::get_screen_height()),"_Stategy_Game_");
-
+  srand(time(0));
+  sf::RenderWindow window(sf::VideoMode(ld::config::get_screen_width(),
+                                        ld::config::get_screen_height()),
+                          "_Strategy_Game_");
   sf::Time per_frame = sf::seconds(1.0f / 60.0f);
   sf::Clock clock;
   sf::Time last_update;
 
-  ld::Resources resources;
-  resources.load();
+    std::shared_ptr<ld::Resources> resources = std::make_shared<ld::Resources>();
+  resources->load();
 
   ld::Map map(ld::map_1, resources);
 
