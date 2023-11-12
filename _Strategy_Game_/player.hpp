@@ -21,6 +21,10 @@ class Player {
     const ld::PlayerType player_type_;
     const ld::Faction faction_;
     const ld::TileType tile_type_;
+
+    int coins_;
+    int tiles_;
+    int all_tiles_;
 };
 } // namespace ld
 

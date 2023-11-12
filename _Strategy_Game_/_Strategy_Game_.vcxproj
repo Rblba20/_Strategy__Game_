@@ -138,6 +138,7 @@
     <Text Include="CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="game_resource.cpp" />
     <ClCompile Include="gui.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="map.cpp" />
@@ -149,6 +150,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="config.hpp" />
+    <ClInclude Include="game_resource.hpp" />
     <ClInclude Include="gui.hpp" />
     <ClInclude Include="map.hpp" />
     <ClInclude Include="player.hpp" />

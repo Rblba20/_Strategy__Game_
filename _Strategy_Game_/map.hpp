@@ -87,6 +87,14 @@ inline bool neighbor_tiles(const ld::Tile &selected_tile,
         void clean_up_units();
         void switch_players();
         bool is_human_active() const;
+        bool check_free_tile_available(bool check_for_units,
+                                       bool check_for_resources) const;
+        void add_game_resource();
+        void land_payout() const;
+
+        void play_ai();
+
+        sf::Time ai_timer_;
 
         ld::Gui gui_;
 

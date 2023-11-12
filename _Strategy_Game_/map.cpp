@@ -10,7 +10,7 @@ Map::Map(const ld::MapDefinition &map_definition,
           ld::PlayerType::Human, ld::Faction::Skeleton, ld::TileType::Earth)),
       player_2_(std::make_shared<ld::Player>(
           ld::PlayerType::AI, ld::Faction::Knight, ld::TileType::Grass)),
-      active_player_(player_1_), resources(resources) {
+      active_player_(player_2_), resources(resources) {
 
     const sf::Texture &texture_crosshair =
         resources->get_texture("crosshair.png");
@@ -34,8 +34,10 @@ Map::Map(const ld::MapDefinition &map_definition,
     add_new_unit(player_1_, ld::UnitType::Armored);
     add_new_unit(player_2_, ld::UnitType::Armored);
 
-    gui_.update(player_1_, player_2_,
-                active_player_->player_type_ == ld::PlayerType::Human);
+    switch_players();
+
+    //gui_.update(player_1_, player_2_,
+    //            active_player_->player_type_ == ld::PlayerType::Human);
 }
 
 ld::Tile *Map::find_unit_tile(const std::shared_ptr<ld::Unit> &unit) {
@@ -50,6 +52,10 @@ ld::Tile *Map::find_unit_tile(const std::shared_ptr<ld::Unit> &unit) {
 void Map::render(sf::RenderWindow &window) const {
   for (const auto &tile : tiles) {
     window.draw(tile.sprite);
+
+    if (tile.game_resource_) {
+      window.draw(tile.game_resource_->sprite_);
+    }
   }
 
   for (const auto &unit : units) {
@@ -78,13 +84,114 @@ void Map::clean_up_units() {
 }
 
 void Map::switch_players() {
-  // Unselect
+  // Reset
   for (auto &unit : units) {
+    unit->already_moved_ = false;
     unit->selected_ = false;
   }
 
   active_player_ = is_human_active() ? player_2_ : player_1_;
+
+    const int random = ld::randint(3);
+
+  land_payout();
+
+  if (random == 0)
+    add_game_resource();
+    gui_.update(player_1_, player_2_,
+              active_player_->player_type_ == ld::PlayerType::Human);
 }
+
+bool Map::check_free_tile_available(bool check_for_units,
+                                    bool check_for_resources) const {
+
+  if (check_for_units and check_for_resources) {
+    throw std::logic_error("Only one of parameters can be true");
+  }
+
+  // Check there's free space to add a unit
+  bool free_tile = false;
+
+  for (const auto &tile : tiles) {
+    if (tile.get_type() != ld::TileType::Water and !tile.unit_) {
+      free_tile = true;
+      break;
+    }
+  }
+
+  return free_tile;
+}
+
+void Map::add_game_resource() {
+
+  bool free_tile = check_free_tile_available(false, true);
+
+  if (!free_tile) {
+    std::cout << "No space to add game resource!\n";
+    return;
+  }
+
+  auto resource_filenames =
+      std::unordered_map<ld::GameResourceType, std::string>{
+          {ld::GameResourceType::Gold, "gold"},
+          {ld::GameResourceType::Timber, "timber"},
+          {ld::GameResourceType::Tree_1, "tree_1"},
+          {ld::GameResourceType::Tree_2, "tree_2"},
+          {ld::GameResourceType::Stone_1, "stone_1"},
+          {ld::GameResourceType::Stone_2, "stone_2"},
+          {ld::GameResourceType::Stone_3, "stone_3"},
+          {ld::GameResourceType::Stone_4, "stone_4"},
+      };
+
+  std::vector<ld::GameResourceType> types(resource_filenames.size());
+
+  std::transform(resource_filenames.begin(), resource_filenames.end(),
+                 types.begin(), [](const auto pair) { return pair.first; });
+
+  const int random_id = ld::randint(resource_filenames.size() - 1);
+
+  ld::GameResourceType game_resource_type = types[random_id];
+  std::string filename = resource_filenames[game_resource_type] + ".png";
+
+  while (true) {
+    assert(tiles.size() > 0);
+
+    const int id = ld::randint(tiles.size() - 1);
+
+    auto &tile = tiles[id];
+
+    if (tile.get_type() != ld::TileType::Water and !tile.game_resource_) {
+      auto game_resource =
+          ld::GameResource::build(*resources, game_resource_type, filename);
+      tile.game_resource_ = game_resource;
+      game_resource->sprite_.setPosition(tile.sprite.getPosition());
+
+      break;
+    }
+  }
+}
+
+void Map::land_payout() const {
+  int payout = 0;
+
+  int all_tiles = 0;
+
+  for (const auto &tile : tiles) {
+    if (tile.get_type() == active_player_->tile_type_) {
+      payout++;
+    }
+
+    if (tile.get_type() != ld::TileType::Water) {
+      all_tiles++;
+    }
+  }
+
+  active_player_->coins_ += payout;
+  active_player_->tiles_ = payout;
+  active_player_->all_tiles_ = all_tiles;
+}
+
+void Map::play_ai() {}
 
 bool Map::is_human_active() const { return active_player_ == player_1_; }
 
@@ -99,8 +206,7 @@ void Map::handle_left_mouse_click(const sf::Vector2i &pos) {
 
     if (action == ld::GuiAction::EndTurn) {
         switch_players();
-        gui_.update(player_1_, player_2_,
-                    active_player_->player_type_ == ld::PlayerType::Human);
+        play_ai();
         return;
   }
 
@@ -148,6 +254,7 @@ void Map::handle_left_mouse_click(const sf::Vector2i &pos) {
         selected_tile.sprite = sf::Sprite(resources->get_texture(texture_name));
         selected_tile.sprite.setPosition(pos);
         player_1_->selected_unit_->selected_ = false;
+        player_1_->selected_unit_->already_moved_ = true;
         player_1_->selected_unit_ = nullptr;
         unit_tile->unit_ = nullptr;
       } else {
@@ -156,7 +263,8 @@ void Map::handle_left_mouse_click(const sf::Vector2i &pos) {
     }
   } else {
     // Select a unit
-    if (selected_tile.unit_->get_faction() == player_1_->faction_) {
+    if (!selected_tile.unit_->already_moved_ and
+        selected_tile.unit_->get_faction() == player_1_->faction_) {
         crosshair.setPosition(selected_tile.unit_->sprite.getPosition());
         selected_tile.unit_->selected_ = true;
         player_1_->selected_unit_ = selected_tile.unit_;
@@ -174,17 +282,10 @@ bool Map::is_valid_move(const ld::Tile &selected_tile,
 
 void Map::add_new_unit(std::shared_ptr<ld::Player> &player,
                        ld::UnitType unit_type) {
-  // Check there's free space to add a unit
-  bool no_space = true;
 
-  for (const auto &tile : tiles) {
-    if (tile.unit_ == nullptr) {
-      no_space = false;
-      break;
-    }
-  }
+    bool free_tile = check_free_tile_available(true, false);
   
-  if (no_space) {
+   if (!free_tile) {
       std::cout << "No space to add this unit!\n";
       return;
   }
@@ -209,5 +310,14 @@ void Map::add_new_unit(std::shared_ptr<ld::Player> &player,
   }
 }
 
-void Map::update(const sf::Time &delta) {}
+void Map::update(const sf::Time &delta) {
+  if (active_player_->player_type_ == ld::PlayerType::AI) {
+    ai_timer_ += delta;
+
+    if (ai_timer_ > sf::seconds(ld::randint(3, 1))) {
+      ai_timer_ = sf::seconds(0);
+      switch_players();
+    }
+  }
+}
 } // namespace ld

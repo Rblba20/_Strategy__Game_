@@ -2,6 +2,7 @@
 #define TILE_H
 
 #include "unit.hpp"
+#include "game_resource.hpp"
 #include "config.hpp"
 #include <SFML/Graphics.hpp>
 
@@ -17,6 +18,7 @@ class Tile {
     sf::Sprite sprite;
 
     std::shared_ptr<ld::Unit> unit_;
+    std::shared_ptr<ld::GameResource> game_resource_;
 
     int row_, col_;
     
