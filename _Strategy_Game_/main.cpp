@@ -11,7 +11,10 @@
 #include "resources.hpp"
 #include "tile.hpp"
 
-void update(const sf::Time &delta, ld::Map &map) { map.update(delta); }
+void update(sf::RenderWindow &window, const sf::Time &delta, ld::Map &map) {
+  //  map.update(window, delta);
+    map.update(delta);
+}
 
 void render(sf::RenderWindow &window, const ld::Map &map) {
   window.clear();
@@ -29,18 +32,22 @@ void handle_events(sf::RenderWindow &window, ld::Map &map) {
       window.close();
     else if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
       map.handle_left_mouse_click(pos);
-    } else if (event.type == sf::Event::KeyPressed and
-               event.key.code == sf::Keyboard::Escape) {
-      window.close();
+    } else if (event.type == sf::Event::KeyPressed) {
+      if (event.key.code == sf::Keyboard::Escape) {
+          window.close();
+      } else if (event.key.code == sf::Keyboard::Return) {
+          map.end_human_turn();
+      }
     }
   }
 }
 
 int main() {
-  srand(time(0));
   sf::RenderWindow window(sf::VideoMode(ld::config::get_screen_width(),
                                         ld::config::get_screen_height()),
                           "_Strategy_Game_");
+  window.setMouseCursorVisible(false);
+
   sf::Time per_frame = sf::seconds(1.0f / 60.0f);
   sf::Clock clock;
   sf::Time last_update;
@@ -55,7 +62,7 @@ int main() {
 
     if (delta > per_frame) {
       handle_events(window, map);
-      update(delta, map);
+      update(window, delta, map);
       render(window, map);
       last_update = clock.getElapsedTime();
     }

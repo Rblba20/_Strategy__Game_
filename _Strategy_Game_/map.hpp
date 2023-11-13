@@ -60,6 +60,18 @@ inline bool neighbor_tiles(const ld::Tile &selected_tile,
         return ((row_diff == 1 and col_diff == 0) or
                 (row_diff == 0 and col_diff == 1));
     }
+
+inline int calc_distance(const ld::Tile &tile, const ld::Tile *unit_tile) {
+
+        if (!unit_tile) {
+            return -1;
+        }
+
+        const int row_diff = std::abs(tile.row_ - unit_tile->row_);
+        const int col_diff = std::abs(tile.col_ - unit_tile->col_);
+
+        return row_diff + col_diff;
+}
 }
 
     class Map {
@@ -82,6 +94,7 @@ inline bool neighbor_tiles(const ld::Tile &selected_tile,
        void handle_left_mouse_click(const sf::Vector2i &pos);
 
        void update(const sf::Time &delta);
+       void end_human_turn();
 
     private:
         void clean_up_units();
@@ -90,9 +103,14 @@ inline bool neighbor_tiles(const ld::Tile &selected_tile,
         bool check_free_tile_available(bool check_for_units,
                                        bool check_for_resources) const;
         void add_game_resource();
-        void land_payout() const;
+        void update_active_player_tiles();
+        void land_payout();
 
         void play_ai();
+        void update_gui();
+        void move_enemy_unit(const std::shared_ptr<ld::Unit> &unit,
+                             ld::Tile &tile, ld::Tile *unit_tile,
+                             const std::string &texture_name);
 
         sf::Time ai_timer_;
 

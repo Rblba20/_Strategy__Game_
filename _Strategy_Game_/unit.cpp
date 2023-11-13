@@ -23,20 +23,15 @@ ld::UnitType Unit::get_type() const { return unit_type_; }
 ld::Faction Unit::get_faction() const { return unit_faction_; }
 
 bool Unit::can_fight(const std::shared_ptr<ld::Unit> &other_unit) const {
+    if (already_moved_)
+        return false;
+
     return (other_unit and this != other_unit.get() and
             get_faction() != other_unit->get_faction());
 }
 
 void Unit::fight(std::shared_ptr<ld::Unit> &unit) {
-    const int diff = std::abs(unit->get_strength() - get_strength());
-    int randomized_diff = ld::randint(diff);
-
-    if (randomized_diff == 0)
-        randomized_diff = ld::randint(5, 2);
-
-    randomized_diff = std::max(2, randomized_diff);
-
-    const int random_factor = std::ceil(std::log(randomized_diff * 2));
+    const int random_factor = ld::randint(4, 2);
     const int lucky_player = ld::randint(1);
 
     if (lucky_player) {
@@ -64,6 +59,33 @@ void Unit::fight(std::shared_ptr<ld::Unit> &unit) {
               << unit->get_strength() << std::endl;
 }
 
+const std::string Unit::get_unit_name() const {
+    switch (get_type()) {
+    case ld::UnitType::Warrior:
+        return "Warrior";
+    case ld::UnitType::Armored:
+        return "Armored warrior";
+    case ld::UnitType::Special:
+        if (get_faction() == ld::Faction::Skeleton) {
+            return "Wizard";
+        } else if (get_faction() == ld::Faction::Knight) {
+            return "Knight";
+        }
+    }
+
+    return "";
+}
+
+const std::string Unit::get_unit_faction() const {
+    if (get_faction() == ld::Faction::Skeleton) {
+        return "Skeletons";
+    } else if (get_faction() == ld::Faction::Knight) {
+        return "Knights";
+    }
+
+    return "";
+}
+
 // -------------------------------------------
 // Factory functions for building unit types
 // -------------------------------------------
@@ -77,7 +99,15 @@ std::shared_ptr<ld::Unit> Unit::build_unit(const ld::Resources &resources,
     };
 
     std::unordered_map<ld::UnitType, std::string> faction_units = {
+        {ld::UnitType::Warrior, "warrior"},
         {ld::UnitType::Armored, "armored"},
+        {ld::UnitType::Special, "special"},
+    };
+
+        std::unordered_map<ld::UnitType, int> unit_strengths = {
+        {ld::UnitType::Warrior, 10},
+        {ld::UnitType::Armored, 15},
+        {ld::UnitType::Special, 25},
     };
 
     const std::string filename =
@@ -86,7 +116,7 @@ std::shared_ptr<ld::Unit> Unit::build_unit(const ld::Resources &resources,
     std::shared_ptr<ld::Unit> unit = std::make_shared<ld::Unit>(
         resources.get_texture(filename), faction, unit_type);
 
-    unit->set_strength(10);
+    unit->set_strength(unit_strengths[unit_type]);
 
     return unit;
 }
