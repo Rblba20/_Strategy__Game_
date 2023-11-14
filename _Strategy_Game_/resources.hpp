@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 
 #include "config.hpp"
 #include "tile_config.hpp"
@@ -42,6 +43,7 @@ const std::vector<std::string> files = {
     "button_brown.png",
     "button_brown_pressed.png",
     "crosshair.png",
+    "cursor.png",
 
     // Resources
     "gold.png",
@@ -62,6 +64,7 @@ public:
   const sf::Texture &get_texture(const std::string &filename) const;
 
   sf::Font basic_font_;
+  sf::Music music_;
 
 private:
   std::unordered_map<std::string, std::unique_ptr<sf::Texture>> textures;

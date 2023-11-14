@@ -8,6 +8,7 @@ namespace config {
 const int TILE_SIZE = 64;
 const int ROWS = 10;
 const int COLS = 16;
+const std::string VERSION = "0.1.0";
 constexpr int get_screen_width() noexcept { return TILE_SIZE * COLS; }
 constexpr int get_screen_height() noexcept { return TILE_SIZE * ROWS; }
 } // namespace config

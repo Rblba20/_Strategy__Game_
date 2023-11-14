@@ -13,7 +13,7 @@
 
 void update(sf::RenderWindow &window, const sf::Time &delta, ld::Map &map) {
   //  map.update(window, delta);
-    map.update(delta);
+    map.update(window, delta);
 }
 
 void render(sf::RenderWindow &window, const ld::Map &map) {
@@ -42,7 +42,14 @@ void handle_events(sf::RenderWindow &window, ld::Map &map) {
   }
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+  for (int i = 0; i < argc; i++) {
+    if (std::string(argv[i]) == "--version") {
+      std::cout << "_Strategy_Game_ v" << ld::config::VERSION << std::endl;
+      return 0;
+    }
+  }
+
   sf::RenderWindow window(sf::VideoMode(ld::config::get_screen_width(),
                                         ld::config::get_screen_height()),
                           "_Strategy_Game_");
